@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <!-- Background Lingkaran Bulat Sederhana -->
+  <circle cx="256" cy="256" r="240" fill="#10B981" />
+  <!-- Simbol e + Sama Dengan (=) di bagian dalam -->
+  <path d="M180 220 H332 M180 292 H332" stroke="#FFFFFF" stroke-width="40" stroke-linecap="round" />
+  <path d="M332 220 C332 140, 180 140, 180 220 C180 340, 332 340, 332 292" fill="none" stroke="#FFFFFF" stroke-width="40" stroke-linecap="round" />
+</svg>
