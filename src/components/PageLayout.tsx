@@ -95,7 +95,7 @@ export default function PageLayout({
       </div>
 
       <ConfirmDialog
-        open={showResetConfirm}
+        isOpen={showResetConfirm}
         title={t("common.resetConfirmTitle")}
         message={t("common.resetConfirmMsg")}
         onConfirm={handleReset}
