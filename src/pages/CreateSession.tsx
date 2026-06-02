@@ -41,14 +41,16 @@ export default function CreateSession() {
             <LanguageSwitcher variant="hero" />
             <ThemeSwitcher variant="hero" />
           </div>
-          <motion.div
+          <motion.img
             initial={{ scale: 0, rotate: -10 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ type: "spring", stiffness: 200, damping: 15 }}
-            className="text-6xl mb-4"
-          >
-            ⚖️
-          </motion.div>
+            src="/logo-512.png"
+            alt="equall logo"
+            width={80}
+            height={80}
+            className="w-20 h-20 mx-auto mb-4"
+          />
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
