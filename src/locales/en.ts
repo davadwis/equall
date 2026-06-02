@@ -38,6 +38,24 @@ export default {
     heroTagline: "Split bills easier, fairer, and transparently",
     cardTitle: "Create New Session",
     cardSubtitle: "Name your session and select a currency for split bill",
+    seoTitle: "Online Split Bill Calculator",
+    seoParagraph1:
+      "equall is an online split bill calculator to divide food bills, hangout expenses, and shared costs quickly.",
+    seoParagraph2:
+      "You can add menu items, assign items per person, include tax or service charge, then share the result via link, WhatsApp, or ready-to-send text.",
+    seoPoint1: "Automatic per-person split calculation",
+    seoPoint2: "Supports tax, service charge, and tip",
+    seoPoint3: "Share result as link or plain text",
+    faqTitle: "Split Bill Calculator FAQ",
+    faqQ1: "What is an online split bill calculator?",
+    faqA1:
+      "An online split bill calculator helps divide the total bill for each person automatically based on the items they consumed.",
+    faqQ2: "Can I add tax and service charge?",
+    faqA2:
+      "Yes. You can add tax, service charge, tip, or custom fees, and the app will calculate each person's final amount.",
+    faqQ3: "Can I share the split bill result?",
+    faqA3:
+      "Yes. You can share it via link, WhatsApp, copy-ready text, or image download.",
     sessionNameLabel: "Session Name",
     sessionNamePlaceholder: "e.g. Dinner at Steak House",
     sessionNameHint: "Minimum 3 characters",

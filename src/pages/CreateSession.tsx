@@ -181,6 +181,60 @@ export default function CreateSession() {
         </motion.div>
       </div>
 
+      <div className="px-4 pb-8">
+        <div className="max-w-3xl mx-auto bg-white/70 dark:bg-gray-900/70 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 md:p-6">
+          <h2 className="text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100">
+            {t("createSession.seoTitle")}
+          </h2>
+          <p className="mt-2 text-sm md:text-base text-gray-600 dark:text-gray-300 leading-relaxed">
+            {t("createSession.seoParagraph1")}
+          </p>
+          <p className="mt-2 text-sm md:text-base text-gray-600 dark:text-gray-300 leading-relaxed">
+            {t("createSession.seoParagraph2")}
+          </p>
+          <div className="mt-4 grid gap-2 text-sm text-gray-700 dark:text-gray-300">
+            <p>{`• ${t("createSession.seoPoint1")}`}</p>
+            <p>{`• ${t("createSession.seoPoint2")}`}</p>
+            <p>{`• ${t("createSession.seoPoint3")}`}</p>
+          </div>
+
+          <div className="mt-6 pt-5 border-t border-gray-100 dark:border-gray-800">
+            <h3 className="text-base md:text-lg font-bold text-gray-800 dark:text-gray-100">
+              {t("createSession.faqTitle")}
+            </h3>
+
+            <div className="mt-3 space-y-3">
+              <div>
+                <p className="text-sm md:text-base font-semibold text-gray-800 dark:text-gray-100">
+                  {t("createSession.faqQ1")}
+                </p>
+                <p className="mt-1 text-sm md:text-base text-gray-600 dark:text-gray-300 leading-relaxed">
+                  {t("createSession.faqA1")}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-sm md:text-base font-semibold text-gray-800 dark:text-gray-100">
+                  {t("createSession.faqQ2")}
+                </p>
+                <p className="mt-1 text-sm md:text-base text-gray-600 dark:text-gray-300 leading-relaxed">
+                  {t("createSession.faqA2")}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-sm md:text-base font-semibold text-gray-800 dark:text-gray-100">
+                  {t("createSession.faqQ3")}
+                </p>
+                <p className="mt-1 text-sm md:text-base text-gray-600 dark:text-gray-300 leading-relaxed">
+                  {t("createSession.faqA3")}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="text-center py-6 text-xs text-gray-400 dark:text-gray-600">
         equall &copy; {new Date().getFullYear()}
       </div>

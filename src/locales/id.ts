@@ -38,6 +38,24 @@ export default {
     heroTagline: "Split bill lebih mudah, adil, dan transparan",
     cardTitle: "Buat Session Baru",
     cardSubtitle: "Beri nama dan pilih mata uang untuk split bill kamu",
+    seoTitle: "Kalkulator Split Bill Online",
+    seoParagraph1:
+      "equall adalah kalkulator split bill online untuk membagi tagihan makan, nongkrong, dan patungan dengan cepat.",
+    seoParagraph2:
+      "Kamu bisa input menu, assign ke setiap orang, tambah pajak atau service charge, lalu bagikan hasilnya lewat link, WhatsApp, atau teks siap kirim.",
+    seoPoint1: "Hitung patungan otomatis per orang",
+    seoPoint2: "Dukungan pajak, service charge, dan tip",
+    seoPoint3: "Hasil bisa dibagikan dalam link atau teks",
+    faqTitle: "FAQ Kalkulator Split Bill",
+    faqQ1: "Apa itu kalkulator split bill online?",
+    faqA1:
+      "Kalkulator split bill online membantu membagi total tagihan ke setiap orang secara otomatis berdasarkan item yang dipesan.",
+    faqQ2: "Apakah bisa tambah pajak dan service charge?",
+    faqA2:
+      "Bisa. Kamu dapat menambahkan pajak, service charge, tip, atau biaya custom lalu sistem akan menghitung total akhir per orang.",
+    faqQ3: "Apakah hasil split bill bisa dibagikan?",
+    faqA3:
+      "Bisa. Hasil bisa dibagikan lewat link, WhatsApp, salin teks siap kirim, atau unduh gambar.",
     sessionNameLabel: "Nama Session",
     sessionNamePlaceholder: "Contoh: Makan Malam Steak House",
     sessionNameHint: "Minimal 3 karakter",
