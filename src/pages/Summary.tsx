@@ -365,6 +365,8 @@ export default function Summary() {
             <span className="flex items-center justify-center gap-2">
               <svg
                 className="animate-spin w-4 h-4"
+                aria-hidden="true"
+                focusable="false"
                 fill="none"
                 viewBox="0 0 24 24"
               >
