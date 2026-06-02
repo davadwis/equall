@@ -18,6 +18,7 @@ export default function CreateSession() {
   const [name, setName] = useState("");
   const [currency, setCurrency] = useState<Currency>("IDR");
   const [isLoading, setIsLoading] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number[]>([0]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -185,7 +186,7 @@ export default function CreateSession() {
         </motion.div>
       </div>
 
-      <div className="px-4 pb-8">
+      <div className="px-4 pt-8 pb-8 md:pt-10">
         <div className="max-w-3xl mx-auto bg-white/70 dark:bg-gray-900/70 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 md:p-6">
           <h2 className="text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100">
             {t("createSession.seoTitle")}
@@ -202,38 +203,54 @@ export default function CreateSession() {
             <p>{`• ${t("createSession.seoPoint3")}`}</p>
           </div>
 
-          <div className="mt-6 pt-5 border-t border-gray-100 dark:border-gray-800">
+          <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800">
             <h3 className="text-base md:text-lg font-bold text-gray-800 dark:text-gray-100">
               {t("createSession.faqTitle")}
             </h3>
 
-            <div className="mt-3 space-y-3">
-              <div>
-                <p className="text-sm md:text-base font-semibold text-gray-800 dark:text-gray-100">
-                  {t("createSession.faqQ1")}
-                </p>
-                <p className="mt-1 text-sm md:text-base text-gray-600 dark:text-gray-300 leading-relaxed">
-                  {t("createSession.faqA1")}
-                </p>
-              </div>
+            <div className="mt-4 space-y-3">
+              {[
+                { q: t("createSession.faqQ1"), a: t("createSession.faqA1") },
+                { q: t("createSession.faqQ2"), a: t("createSession.faqA2") },
+                { q: t("createSession.faqQ3"), a: t("createSession.faqA3") },
+              ].map((item, index) => {
+                const isOpen = openFaq.includes(index);
 
-              <div>
-                <p className="text-sm md:text-base font-semibold text-gray-800 dark:text-gray-100">
-                  {t("createSession.faqQ2")}
-                </p>
-                <p className="mt-1 text-sm md:text-base text-gray-600 dark:text-gray-300 leading-relaxed">
-                  {t("createSession.faqA2")}
-                </p>
-              </div>
+                return (
+                  <div
+                    key={item.q}
+                    className="rounded-xl border border-gray-200/80 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 overflow-hidden"
+                  >
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setOpenFaq((prev) =>
+                          isOpen ? prev.filter((i) => i !== index) : [...prev, index],
+                        )
+                      }
+                      aria-expanded={isOpen}
+                      className="w-full px-4 py-3 flex items-center justify-between text-left"
+                    >
+                      <span className="text-sm md:text-base font-semibold text-gray-800 dark:text-gray-100 pr-4">
+                        {item.q}
+                      </span>
+                      <span
+                        className={`text-indigo-500 dark:text-indigo-300 text-lg leading-none transition-transform ${
+                          isOpen ? "rotate-45" : "rotate-0"
+                        }`}
+                      >
+                        +
+                      </span>
+                    </button>
 
-              <div>
-                <p className="text-sm md:text-base font-semibold text-gray-800 dark:text-gray-100">
-                  {t("createSession.faqQ3")}
-                </p>
-                <p className="mt-1 text-sm md:text-base text-gray-600 dark:text-gray-300 leading-relaxed">
-                  {t("createSession.faqA3")}
-                </p>
-              </div>
+                    {isOpen && (
+                      <p className="px-4 pb-4 text-sm md:text-base text-gray-600 dark:text-gray-300 leading-relaxed">
+                        {item.a}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
