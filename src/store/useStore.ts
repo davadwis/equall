@@ -9,6 +9,7 @@ import type {
   Charge,
   PaymentMethod,
   Currency,
+  SplitMode,
 } from "../types";
 import { generateSlug } from "../lib/formatters";
 
@@ -21,7 +22,11 @@ interface StoreState {
   paymentMethods: PaymentMethod[];
 
   // Session
-  createSession: (name: string, currency: Currency) => Session;
+  createSession: (
+    name: string,
+    currency: Currency,
+    splitMode?: SplitMode,
+  ) => Session;
   setCurrentStep: (step: number) => void;
 
   // Menu Pool
@@ -31,6 +36,7 @@ interface StoreState {
     updates: Partial<Omit<MenuItem, "id" | "remainingQty">>,
   ) => void;
   removeMenuItem: (id: string) => void;
+  updateMenuItemSplitPeople: (id: string, personIds?: string[]) => void;
 
   // Persons
   setPersons: (persons: Person[]) => void;
@@ -83,9 +89,9 @@ export const useStore = create<StoreState>()(
       charges: [],
       paymentMethods: [],
 
-      createSession: (name, currency) => {
+      createSession: (name, currency, splitMode = "itemized") => {
         const slug = generateSlug(name);
-        const session: Session = { id: slug, name, currency, slug };
+        const session: Session = { id: slug, name, currency, slug, splitMode };
         set({
           session,
           currentStep: 2,
@@ -139,6 +145,14 @@ export const useStore = create<StoreState>()(
         }));
       },
 
+      updateMenuItemSplitPeople: (id, personIds) => {
+        set((state) => ({
+          menuPool: state.menuPool.map((item) =>
+            item.id === id ? { ...item, splitWithPersonIds: personIds } : item,
+          ),
+        }));
+      },
+
       setPersons: (persons) => set({ persons }),
 
       addPerson: (name) => {
@@ -152,6 +166,9 @@ export const useStore = create<StoreState>()(
           const updatedPool = state.menuPool.map((item) => ({
             ...item,
             remainingQty: computeRemainingQty(item, newPersons),
+            splitWithPersonIds: item.splitWithPersonIds?.filter(
+              (personId) => personId !== id,
+            ),
           }));
           return { persons: newPersons, menuPool: updatedPool };
         });

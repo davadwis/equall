@@ -9,6 +9,7 @@ import ProgressStepper from "./ProgressStepper";
 import LanguageSwitcher from "./LanguageSwitcher";
 import ThemeSwitcher from "./ThemeSwitcher";
 import ConfirmDialog from "./ConfirmDialog";
+import { useTutorial } from "../contexts/tutorial";
 
 interface Props {
   children: ReactNode;
@@ -17,13 +18,13 @@ interface Props {
   subtitle?: string;
 }
 
-export const pageVariants = {
+const pageVariants = {
   initial: { opacity: 0, x: 40 },
   animate: { opacity: 1, x: 0 },
   exit: { opacity: 0, x: -40 },
 };
 
-export const pageTransition: Transition = {
+const pageTransition: Transition = {
   duration: 0.3,
 };
 
@@ -36,6 +37,7 @@ export default function PageLayout({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const resetStore = useStore((s) => s.resetStore);
+  const { isTutorialOn, toggleTutorial } = useTutorial();
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const handleReset = () => {
@@ -64,6 +66,19 @@ export default function PageLayout({
               </span>
             </div>
             <div className="flex items-center gap-2">
+              <button
+                onClick={toggleTutorial}
+                title={t("common.tutorial")}
+                className={`h-8 rounded-lg border px-2.5 text-xs font-bold transition-colors ${
+                  isTutorialOn
+                    ? "border-amber-300 bg-amber-100 text-amber-700 dark:border-amber-700 dark:bg-amber-950/70 dark:text-amber-200"
+                    : "border-gray-200 bg-gray-100 text-gray-500 hover:bg-amber-50 hover:text-amber-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-amber-950/50"
+                }`}
+              >
+                {isTutorialOn
+                  ? t("common.tutorialOn")
+                  : t("common.tutorial")}
+              </button>
               <button
                 onClick={() => setShowResetConfirm(true)}
                 title={t("common.resetAll")}

@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useStore } from "../store/useStore";
 import { useToast } from "../components/Toast";
 import PageLayout from "../components/PageLayout";
+import TutorialTip from "../components/TutorialTip";
 import { formatCurrency } from "../lib/formatters";
 import { calculatePersonSummaries } from "../lib/calculations";
 import { saveSession } from "../lib/supabase";
@@ -28,7 +29,12 @@ export default function Summary() {
   const [isExporting, setIsExporting] = useState(false);
 
   const currency = session?.currency ?? "IDR";
-  const summaries = calculatePersonSummaries(persons, charges);
+  const summaries = calculatePersonSummaries(
+    persons,
+    charges,
+    menuPool,
+    session?.splitMode,
+  );
   const grandTotal = summaries.reduce((s, ps) => s + ps.total, 0);
 
   const handleSave = async () => {
@@ -134,6 +140,7 @@ export default function Summary() {
       title={t("summary.pageTitle")}
       subtitle={t("summary.pageSubtitle")}
     >
+      <TutorialTip text={t("summary.tutorialSummary")} className="mb-4">
       <div ref={summaryRef} className="space-y-4">
         {/* Session Info */}
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-4 text-white">
@@ -189,7 +196,9 @@ export default function Summary() {
                     {ps.person.name}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {ps.person.claimedItems.length} item
+                    {t("summary.itemCount", {
+                      count: ps.person.claimedItems.length,
+                    })}
                   </p>
                 </div>
               </div>
@@ -304,6 +313,7 @@ export default function Summary() {
           </div>
         )}
       </div>
+      </TutorialTip>
 
       {/* Share Link */}
       {shareLink && (
@@ -332,7 +342,8 @@ export default function Summary() {
       )}
 
       {/* Action Buttons */}
-      <div className="mt-6 space-y-3">
+      <TutorialTip text={t("summary.tutorialShareActions")} className="mt-6">
+      <div className="space-y-3">
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => navigate("/payment")}
@@ -391,6 +402,7 @@ export default function Summary() {
           )}
         </button>
       </div>
+      </TutorialTip>
     </PageLayout>
   );
 }

@@ -38,4 +38,10 @@
   textarea {
     font-family: inherit;
   }
+
+  button,
+  input,
+  select {
+    -webkit-tap-highlight-color: transparent;
+  }
 }

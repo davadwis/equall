@@ -7,6 +7,7 @@ import { useToast } from "../components/Toast";
 import PageLayout from "../components/PageLayout";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
+import TutorialTip from "../components/TutorialTip";
 import type { PaymentMethod, PaymentType } from "../types";
 
 const PAYMENT_TYPE_BASES: { value: PaymentType; icon: string }[] = [
@@ -143,7 +144,8 @@ export default function PaymentMethods() {
       subtitle={t("payment.pageSubtitle")}
     >
       {/* Form */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden mb-4">
+      <TutorialTip text={t("payment.tutorialPayment")} className="mb-4">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
         <button
           onClick={() => {
             if (editingId) {
@@ -246,6 +248,7 @@ export default function PaymentMethods() {
           )}
         </AnimatePresence>
       </div>
+      </TutorialTip>
 
       {/* Payment Method Cards */}
       <div className="space-y-3 mb-6">

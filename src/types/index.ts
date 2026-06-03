@@ -29,7 +29,10 @@ export interface Session {
   name: string;
   currency: Currency;
   slug: string;
+  splitMode?: SplitMode;
 }
+
+export type SplitMode = "itemized" | "equal";
 
 export interface MenuItem {
   id: string;
@@ -38,6 +41,7 @@ export interface MenuItem {
   pricePerUnit: number;
   totalPrice: number;
   remainingQty: number;
+  splitWithPersonIds?: string[];
 }
 
 export interface ClaimedItem {

@@ -20,6 +20,8 @@ export default {
     createNew: "Create New Split Bill",
     copyright: "equall",
     resetAll: "Reset All",
+    tutorial: "Guide",
+    tutorialOn: "Guide On",
     resetConfirmTitle: "Reset Everything?",
     resetConfirmMsg:
       "All data will be cleared and you will be taken back to the start.",
@@ -60,11 +62,22 @@ export default {
     sessionNamePlaceholder: "e.g. Dinner at Steak House",
     sessionNameHint: "Minimum 3 characters",
     currencyLabel: "Currency",
+    splitModeLabel: "Split Type",
+    splitModeItemized: "Per Item",
+    splitModeItemizedHint: "Claim items per person",
+    splitModeEqual: "Equal",
+    splitModeEqualHint: "Divide total by people",
     submitBtn: "🚀 Start Split Bill",
     feature1: "Accurate",
     feature2: "Fast",
     feature3: "Shareable",
     validationMinChar: "Session name must be at least 3 characters",
+    tutorialSessionName:
+      "Name the activity so it is easy to recognize when shared, such as Friday Padel or Team Dinner.",
+    tutorialCurrency:
+      "Choose the currency. Every amount in the next steps will follow this choice.",
+    tutorialSplitMode:
+      "Choose Per Item for different orders. Choose Equal for shared costs like courts, equipment rental, or group fees.",
   },
 
   menuPool: {
@@ -97,14 +110,26 @@ export default {
     validationQty: "Quantity must be at least 1",
     validationPrice: "Price must be greater than 0",
     validationMinItem: "Add at least 1 menu item first",
+    tutorialAddItem:
+      "Open this form to add each cost component, such as Court, Racket rental, Drinks, or Parking.",
+    tutorialPriceMode:
+      "Use Total Price when you already know the total. Use Unit Price when the price must be multiplied by quantity.",
+    tutorialItemList:
+      "This list contains all costs to split. You can still edit or remove items before continuing.",
   },
 
   assignItems: {
     pageTitle: "Assign to People",
     pageSubtitle: "Decide who eats what",
+    equalPageTitle: "Add People",
+    equalPageSubtitle: "The total will be split equally across everyone",
     poolStatus: "Pool Status",
+    equalPoolStatus: "Shared Total",
     poolRemaining: "{{remaining}}/{{total}} items left",
     poolMenuCount: "{{count}} menu types",
+    equalPeopleCount: "{{count}} people",
+    equalShare: "{{amount}} / person",
+    equalDynamicBadge: "Dynamic per cost",
     poolAllAssigned: "✓ All assigned",
     poolStillRemaining: "Still remaining",
     addPersonTitle: "Add Person",
@@ -113,6 +138,12 @@ export default {
     claimBtn: "Claim",
     closeBtn: "Close",
     itemCountLabel: "{{count}} items · {{subtotal}}",
+    equalPersonShare: "Equal split · {{amount}}",
+    equalCostTitle: "People per Cost",
+    equalCostSubtitle: "Everyone by default",
+    equalSplitCount: "{{count}} people included",
+    equalPerPerson: "Per person",
+    equalAllPeople: "Everyone",
     claimPanelTitle: "Pick items from pool",
     soldOut: "· Out of stock",
     remainingQty: "· {{qty}} left",
@@ -125,9 +156,19 @@ export default {
     toastDeleted: "Person removed",
     validationName: "Enter a name",
     validationMin1: "Add at least 1 person",
+    validationMin2: "Add at least 2 people",
     validationMin1Claim: "At least 1 item must be claimed",
+    validationSplitPeople: "Each cost must include at least 1 person",
     validationStockOut: "No remaining quantity left",
     validationQtyOut: "No remaining quantity",
+    tutorialAddPerson:
+      "Add everyone involved. These names will be used for calculation and sharing.",
+    tutorialEqualCosts:
+      "For each cost, choose who is included. Turn off a person's chip if they should not pay for that cost.",
+    tutorialPersonList:
+      "This shows each person's estimated subtotal before extra charges like tax, service, or tip.",
+    tutorialClaim:
+      "In Per Item mode, open Claim and select the items each person consumed, including quantity.",
   },
 
   charges: {
@@ -170,6 +211,12 @@ export default {
     validationValue: "Value must be greater than 0",
     validationPercent: "Percentage cannot exceed 100%",
     validationName: "Charge name is required",
+    tutorialChargesSummary:
+      "This area shows the main cost total, extra charges total, and estimated grand total.",
+    tutorialChargeForm:
+      "Extra charges are optional. Use this for tax, service charge, tip, or another custom fee.",
+    tutorialChargeDistribution:
+      "Choose Proportional when the fee follows each person's share. Choose Equal when everyone pays the same fee.",
   },
 
   payment: {
@@ -188,6 +235,8 @@ export default {
     toastUpdated: "Method updated",
     toastDeleted: "Method deleted",
     validationFirst: "First field is required",
+    tutorialPayment:
+      "Payment methods are optional. Add this if the shared result should show bank, wallet, or transfer details.",
     typeBankTransfer: "Bank Transfer",
     typeEwallet: "E-Wallet",
     typePaypal: "PayPal",
@@ -224,6 +273,10 @@ export default {
     toastDownloaded: "Image downloaded!",
     toastDownloadFail: "Failed to export image",
     itemCount: "{{count}} items",
+    tutorialSummary:
+      "Review each person's total here. When it looks right, save to create a share link or copy the text.",
+    tutorialShareActions:
+      "Use these buttons to copy text, download an image, or save a shareable link.",
   },
 
   share: {

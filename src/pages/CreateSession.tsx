@@ -6,17 +6,21 @@ import { useStore } from "../store/useStore";
 import { useToast } from "../components/Toast";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import ThemeSwitcher from "../components/ThemeSwitcher";
+import TutorialTip from "../components/TutorialTip";
+import { useTutorial } from "../contexts/tutorial";
 import { CURRENCIES } from "../types";
-import type { Currency } from "../types";
+import type { Currency, SplitMode } from "../types";
 
 export default function CreateSession() {
   const navigate = useNavigate();
   const createSession = useStore((s) => s.createSession);
   const { showToast } = useToast();
   const { t } = useTranslation();
+  const { isTutorialOn, toggleTutorial } = useTutorial();
 
   const [name, setName] = useState("");
   const [currency, setCurrency] = useState<Currency>("IDR");
+  const [splitMode, setSplitMode] = useState<SplitMode>("itemized");
   const [isLoading, setIsLoading] = useState(false);
   const [openFaq, setOpenFaq] = useState<number[]>([0]);
 
@@ -27,7 +31,7 @@ export default function CreateSession() {
       return;
     }
     setIsLoading(true);
-    createSession(name.trim(), currency);
+    createSession(name.trim(), currency, splitMode);
     await new Promise((r) => setTimeout(r, 300));
     setIsLoading(false);
     navigate("/menu");
@@ -39,6 +43,16 @@ export default function CreateSession() {
       <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 pt-12 pb-16">
         <div className="max-w-md mx-auto text-center">
           <div className="flex justify-end gap-2 mb-2">
+            <button
+              onClick={toggleTutorial}
+              className={`h-8 rounded-lg border px-2.5 text-xs font-bold transition-colors ${
+                isTutorialOn
+                  ? "border-amber-200 bg-white text-amber-700"
+                  : "border-white/20 bg-white/10 text-white hover:bg-white/20"
+              }`}
+            >
+              {isTutorialOn ? t("common.tutorialOn") : t("common.tutorial")}
+            </button>
             <LanguageSwitcher variant="hero" />
             <ThemeSwitcher variant="hero" />
           </div>
@@ -92,7 +106,7 @@ export default function CreateSession() {
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
+            <TutorialTip text={t("createSession.tutorialSessionName")}>
               <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1.5">
                 {t("createSession.sessionNameLabel")}
               </label>
@@ -112,9 +126,9 @@ export default function CreateSession() {
                   {name.length}/60
                 </span>
               </div>
-            </div>
+            </TutorialTip>
 
-            <div>
+            <TutorialTip text={t("createSession.tutorialCurrency")}>
               <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1.5">
                 {t("createSession.currencyLabel")}
               </label>
@@ -129,7 +143,38 @@ export default function CreateSession() {
                   </option>
                 ))}
               </select>
-            </div>
+            </TutorialTip>
+
+            <TutorialTip text={t("createSession.tutorialSplitMode")}>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                {t("createSession.splitModeLabel")}
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {(["itemized", "equal"] as SplitMode[]).map((mode) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => setSplitMode(mode)}
+                    className={`rounded-xl border px-3 py-3 text-left transition ${
+                      splitMode === mode
+                        ? "border-indigo-400 bg-indigo-50 text-indigo-700 dark:border-indigo-500 dark:bg-indigo-950/50 dark:text-indigo-200"
+                        : "border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                    }`}
+                  >
+                    <span className="block text-sm font-bold">
+                      {mode === "itemized"
+                        ? t("createSession.splitModeItemized")
+                        : t("createSession.splitModeEqual")}
+                    </span>
+                    <span className="mt-1 block text-xs opacity-80">
+                      {mode === "itemized"
+                        ? t("createSession.splitModeItemizedHint")
+                        : t("createSession.splitModeEqualHint")}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </TutorialTip>
 
             <motion.button
               type="submit"

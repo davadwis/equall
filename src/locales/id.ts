@@ -20,6 +20,8 @@ export default {
     createNew: "Buat Split Bill Baru",
     copyright: "equall",
     resetAll: "Ulang Semua",
+    tutorial: "Panduan",
+    tutorialOn: "Panduan Aktif",
     resetConfirmTitle: "Ulang Semua?",
     resetConfirmMsg:
       "Semua data akan dihapus dan kamu kembali ke halaman awal.",
@@ -60,11 +62,22 @@ export default {
     sessionNamePlaceholder: "Contoh: Makan Malam Steak House",
     sessionNameHint: "Minimal 3 karakter",
     currencyLabel: "Mata Uang",
+    splitModeLabel: "Jenis Patungan",
+    splitModeItemized: "Per Item",
+    splitModeItemizedHint: "Claim menu per orang",
+    splitModeEqual: "Rata",
+    splitModeEqualHint: "Total dibagi jumlah orang",
     submitBtn: "🚀 Mulai Split Bill",
     feature1: "Akurat",
     feature2: "Cepat",
     feature3: "Bisa Dibagikan",
     validationMinChar: "Nama session minimal 3 karakter",
+    tutorialSessionName:
+      "Isi nama kegiatan agar mudah dikenali saat dibagikan, misalnya Padel Jumat atau Makan Bareng.",
+    tutorialCurrency:
+      "Pilih mata uang yang dipakai. Semua nominal di langkah berikutnya akan mengikuti pilihan ini.",
+    tutorialSplitMode:
+      "Pilih Per Item untuk makan dengan pesanan berbeda. Pilih Rata untuk patungan lapangan, sewa alat, atau biaya bersama.",
   },
 
   menuPool: {
@@ -97,14 +110,26 @@ export default {
     validationQty: "Quantity minimal 1",
     validationPrice: "Harga harus lebih dari 0",
     validationMinItem: "Tambah minimal 1 item menu terlebih dahulu",
+    tutorialAddItem:
+      "Klik bagian ini untuk membuka form. Masukkan setiap komponen biaya, misalnya Lapangan, Sewa raket, Minum, atau Parkir.",
+    tutorialPriceMode:
+      "Pakai Harga Total kalau sudah tahu total biaya. Pakai Harga Satuan kalau harga perlu dikali jumlah.",
+    tutorialItemList:
+      "Daftar ini adalah semua biaya yang akan dibagi. Kamu masih bisa edit atau hapus sebelum lanjut.",
   },
 
   assignItems: {
     pageTitle: "Assign ke Orang",
     pageSubtitle: "Tentukan siapa yang makan apa",
+    equalPageTitle: "Tambah Peserta",
+    equalPageSubtitle: "Total akan dibagi rata ke semua orang",
     poolStatus: "Pool Status",
+    equalPoolStatus: "Total Patungan",
     poolRemaining: "{{remaining}}/{{total}} item tersisa",
     poolMenuCount: "{{count}} jenis menu",
+    equalPeopleCount: "{{count}} orang",
+    equalShare: "{{amount}} / orang",
+    equalDynamicBadge: "Dinamis per biaya",
     poolAllAssigned: "✓ Semua ter-assign",
     poolStillRemaining: "Masih ada sisa",
     addPersonTitle: "Tambah Orang",
@@ -113,6 +138,12 @@ export default {
     claimBtn: "Claim",
     closeBtn: "Tutup",
     itemCountLabel: "{{count}} item · {{subtotal}}",
+    equalPersonShare: "Patungan rata · {{amount}}",
+    equalCostTitle: "Peserta per Biaya",
+    equalCostSubtitle: "Default semua ikut",
+    equalSplitCount: "{{count}} orang ikut",
+    equalPerPerson: "Per orang",
+    equalAllPeople: "Semua orang",
     claimPanelTitle: "Pilih item dari pool",
     soldOut: "· Habis",
     remainingQty: "· Sisa {{qty}}",
@@ -125,9 +156,19 @@ export default {
     toastDeleted: "Orang dihapus",
     validationName: "Masukkan nama orang",
     validationMin1: "Tambah minimal 1 orang",
+    validationMin2: "Tambah minimal 2 orang",
     validationMin1Claim: "Minimal 1 item harus di-claim",
+    validationSplitPeople: "Setiap biaya harus punya minimal 1 peserta",
     validationStockOut: "Sisa quantity sudah habis",
     validationQtyOut: "Sisa qty sudah habis",
+    tutorialAddPerson:
+      "Tambahkan semua orang yang ikut. Nama ini nanti dipakai untuk menghitung dan membagikan hasil.",
+    tutorialEqualCosts:
+      "Untuk tiap biaya, pilih siapa saja yang ikut patungan. Orang yang tidak ikut biaya tertentu tinggal dimatikan chip namanya.",
+    tutorialPersonList:
+      "Di sini terlihat estimasi subtotal tiap orang sebelum biaya tambahan seperti pajak, service, atau tip.",
+    tutorialClaim:
+      "Untuk mode Per Item, buka Claim lalu pilih menu yang dimakan orang tersebut beserta jumlahnya.",
   },
 
   charges: {
@@ -170,6 +211,12 @@ export default {
     validationValue: "Nilai harus lebih dari 0",
     validationPercent: "Persentase tidak boleh lebih dari 100%",
     validationName: "Nama charge harus diisi",
+    tutorialChargesSummary:
+      "Bagian ini menunjukkan total biaya utama, total biaya tambahan, dan perkiraan grand total.",
+    tutorialChargeForm:
+      "Biaya tambahan opsional. Gunakan ini untuk pajak, service charge, tip, atau biaya custom lain.",
+    tutorialChargeDistribution:
+      "Pilih Proporsional jika biaya mengikuti porsi masing-masing orang. Pilih Rata jika biaya dibagi sama.",
   },
 
   payment: {
@@ -189,6 +236,8 @@ export default {
     toastUpdated: "Metode diperbarui",
     toastDeleted: "Metode dihapus",
     validationFirst: "Field pertama harus diisi",
+    tutorialPayment:
+      "Metode pembayaran opsional. Isi kalau ingin hasil share menampilkan rekening, e-wallet, atau detail transfer.",
     typeBankTransfer: "Transfer Bank",
     typeEwallet: "E-Wallet",
     typePaypal: "PayPal",
@@ -225,6 +274,10 @@ export default {
     toastDownloaded: "Gambar diunduh!",
     toastDownloadFail: "Gagal ekspor gambar",
     itemCount: "{{count}} item",
+    tutorialSummary:
+      "Cek total tiap orang di sini. Kalau sudah benar, simpan untuk membuat link share atau salin teks.",
+    tutorialShareActions:
+      "Gunakan tombol ini untuk salin teks, unduh gambar, atau simpan link yang bisa dibagikan.",
   },
 
   share: {

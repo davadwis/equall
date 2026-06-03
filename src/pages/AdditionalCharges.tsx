@@ -7,6 +7,7 @@ import { useToast } from "../components/Toast";
 import PageLayout from "../components/PageLayout";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
+import TutorialTip from "../components/TutorialTip";
 import { formatCurrency } from "../lib/formatters";
 import type {
   Charge,
@@ -112,8 +113,8 @@ export default function AdditionalCharges() {
   };
 
   const totalCharges = charges.reduce((sum, charge) => {
-    let base = charge.applyTo === "items" ? totalMenuPrice : totalMenuPrice;
-    let amount =
+    const base = charge.applyTo === "items" ? totalMenuPrice : totalMenuPrice;
+    const amount =
       charge.method === "percentage"
         ? base * (charge.value / 100)
         : charge.value;
@@ -127,7 +128,8 @@ export default function AdditionalCharges() {
       subtitle={t("charges.pageSubtitle")}
     >
       {/* Summary Banner */}
-      <div className="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl p-4 text-white mb-4">
+      <TutorialTip text={t("charges.tutorialChargesSummary")} className="mb-4">
+      <div className="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl p-4 text-white">
         <div className="flex justify-between">
           <div>
             <p className="text-indigo-100 text-xs">{t("charges.totalMenu")}</p>
@@ -153,9 +155,11 @@ export default function AdditionalCharges() {
           </span>
         </div>
       </div>
+      </TutorialTip>
 
       {/* Form */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden mb-4">
+      <TutorialTip text={t("charges.tutorialChargeForm")} className="mb-4">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
         <button
           onClick={() => {
             if (editingId) {
@@ -316,7 +320,7 @@ export default function AdditionalCharges() {
                 </div>
 
                 {/* Distribution */}
-                <div>
+                <TutorialTip text={t("charges.tutorialChargeDistribution")}>
                   <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1.5 block">
                     {t("charges.distributionLabel")}
                   </label>
@@ -347,7 +351,7 @@ export default function AdditionalCharges() {
                       ? t("charges.proportionalHint")
                       : t("charges.equalHint")}
                   </p>
-                </div>
+                </TutorialTip>
 
                 <button
                   type="submit"
@@ -360,6 +364,7 @@ export default function AdditionalCharges() {
           )}
         </AnimatePresence>
       </div>
+      </TutorialTip>
 
       {/* Charge Cards */}
       <div className="space-y-3 mb-6">

@@ -7,8 +7,9 @@ import { useToast } from "../components/Toast";
 import PageLayout from "../components/PageLayout";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
+import TutorialTip from "../components/TutorialTip";
 import { formatCurrency } from "../lib/formatters";
-import type { Person } from "../types";
+import type { MenuItem, Person } from "../types";
 
 const cardVariants = {
   initial: { opacity: 0, y: 20 },
@@ -27,12 +28,18 @@ export default function AssignItems() {
   const addPerson = useStore((s) => s.addPerson);
   const removePerson = useStore((s) => s.removePerson);
   const updatePersonName = useStore((s) => s.updatePersonName);
+  const updateMenuItemSplitPeople = useStore(
+    (s) => s.updateMenuItemSplitPeople,
+  );
   const claimItem = useStore((s) => s.claimItem);
   const unclaimItem = useStore((s) => s.unclaimItem);
   const updateClaimedQty = useStore((s) => s.updateClaimedQty);
   const setCurrentStep = useStore((s) => s.setCurrentStep);
 
   const currency = session?.currency ?? "IDR";
+  const isEqualSplit = session?.splitMode === "equal";
+  const menuTotal = menuPool.reduce((sum, item) => sum + item.totalPrice, 0);
+  const personIds = persons.map((person) => person.id);
 
   const [newPersonName, setNewPersonName] = useState("");
   const [expandedPerson, setExpandedPerson] = useState<string | null>(null);
@@ -97,19 +104,59 @@ export default function AssignItems() {
     updateClaimedQty(person.id, menuId, clamped);
   };
 
+  const getSplitPersonIds = (menuItem: MenuItem) =>
+    menuItem.splitWithPersonIds === undefined
+      ? personIds
+      : menuItem.splitWithPersonIds.filter((personId) =>
+          personIds.includes(personId),
+        );
+
+  const getMenuItemShare = (menuItem: MenuItem) => {
+    const splitPersonIds = getSplitPersonIds(menuItem);
+    return splitPersonIds.length > 0
+      ? menuItem.totalPrice / splitPersonIds.length
+      : 0;
+  };
+
+  const handleToggleItemPerson = (menuItem: MenuItem, personId: string) => {
+    const current = getSplitPersonIds(menuItem);
+    const next = current.includes(personId)
+      ? current.filter((id) => id !== personId)
+      : [...current, personId];
+
+    updateMenuItemSplitPeople(
+      menuItem.id,
+      next.length === persons.length ? undefined : next,
+    );
+  };
+
   const getPersonSubtotal = (person: Person) =>
-    person.claimedItems.reduce((s, ci) => s + ci.subtotal, 0);
+    isEqualSplit
+      ? menuPool.reduce((sum, menuItem) => {
+          const splitPersonIds = getSplitPersonIds(menuItem);
+          return splitPersonIds.includes(person.id)
+            ? sum + getMenuItemShare(menuItem)
+            : sum;
+        }, 0)
+      : person.claimedItems.reduce((s, ci) => s + ci.subtotal, 0);
 
   const handleNext = () => {
-    if (persons.length === 0) {
-      showToast(t("assignItems.validationMin1"), "error");
+    if (persons.length < 2) {
+      showToast(t("assignItems.validationMin2"), "error");
+      return;
+    }
+    if (
+      isEqualSplit &&
+      menuPool.some((menuItem) => getSplitPersonIds(menuItem).length === 0)
+    ) {
+      showToast(t("assignItems.validationSplitPeople"), "error");
       return;
     }
     const totalClaimed = persons.reduce(
       (s, p) => s + p.claimedItems.reduce((ss, ci) => ss + ci.qty, 0),
       0,
     );
-    if (totalClaimed === 0) {
+    if (!isEqualSplit && totalClaimed === 0) {
       showToast(t("assignItems.validationMin1Claim"), "error");
       return;
     }
@@ -124,53 +171,74 @@ export default function AssignItems() {
   return (
     <PageLayout
       currentStep={3}
-      title={t("assignItems.pageTitle")}
-      subtitle={t("assignItems.pageSubtitle")}
+      title={
+        isEqualSplit
+          ? t("assignItems.equalPageTitle")
+          : t("assignItems.pageTitle")
+      }
+      subtitle={
+        isEqualSplit
+          ? t("assignItems.equalPageSubtitle")
+          : t("assignItems.pageSubtitle")
+      }
     >
       {/* Pool Summary */}
       <div className="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl p-4 text-white mb-4">
         <div className="flex justify-between items-center">
           <div>
             <p className="text-indigo-100 text-xs font-medium">
-              {t("assignItems.poolStatus")}
+              {isEqualSplit
+                ? t("assignItems.equalPoolStatus")
+                : t("assignItems.poolStatus")}
             </p>
             <p className="text-lg font-bold mt-0.5">
-              {t("assignItems.poolRemaining", {
-                remaining: remainingItems,
-                total: totalItems,
-              })}
+              {isEqualSplit
+                ? formatCurrency(menuTotal, currency)
+                : t("assignItems.poolRemaining", {
+                    remaining: remainingItems,
+                    total: totalItems,
+                  })}
             </p>
           </div>
           <div className="text-right">
             <p className="text-indigo-100 text-xs">
-              {t("assignItems.poolMenuCount", { count: menuPool.length })}
+              {isEqualSplit
+                ? t("assignItems.equalPeopleCount", { count: persons.length })
+                : t("assignItems.poolMenuCount", { count: menuPool.length })}
             </p>
             <div
               className={`mt-1 text-xs font-semibold px-2 py-0.5 rounded-full ${
-                remainingItems === 0 ? "bg-emerald-400" : "bg-white/20"
+                isEqualSplit || remainingItems === 0
+                  ? "bg-emerald-400"
+                  : "bg-white/20"
               }`}
             >
-              {remainingItems === 0
-                ? t("assignItems.poolAllAssigned")
-                : t("assignItems.poolStillRemaining")}
+              {isEqualSplit
+                ? t("assignItems.equalDynamicBadge")
+                : remainingItems === 0
+                  ? t("assignItems.poolAllAssigned")
+                  : t("assignItems.poolStillRemaining")}
             </div>
           </div>
         </div>
-        <div className="mt-3 bg-white/20 rounded-full h-2 overflow-hidden">
-          <motion.div
-            animate={{
-              width:
-                totalItems > 0
-                  ? `${((totalItems - remainingItems) / totalItems) * 100}%`
-                  : "0%",
-            }}
-            className="h-full bg-white rounded-full"
-          />
-        </div>
+        {!isEqualSplit && (
+          <div className="mt-3 bg-white/20 rounded-full h-2 overflow-hidden">
+            <motion.div
+              animate={{
+                width:
+                  totalItems > 0
+                    ? `${((totalItems - remainingItems) / totalItems) * 100}%`
+                    : "0%",
+              }}
+              className="h-full bg-white rounded-full"
+            />
+          </div>
+        )}
       </div>
 
       {/* Add Person */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-4 mb-4">
+      <TutorialTip text={t("assignItems.tutorialAddPerson")} className="mb-4">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-4">
         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">
           {t("assignItems.addPersonTitle")}
         </h3>
@@ -191,9 +259,105 @@ export default function AssignItems() {
           </button>
         </div>
       </div>
+      </TutorialTip>
+
+      {isEqualSplit && persons.length > 0 && (
+        <TutorialTip text={t("assignItems.tutorialEqualCosts")} className="mb-4">
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+              {t("assignItems.equalCostTitle")}
+            </h3>
+            <span className="text-xs text-gray-400 dark:text-gray-500">
+              {t("assignItems.equalCostSubtitle")}
+            </span>
+          </div>
+          {menuPool.map((menuItem) => {
+            const splitPersonIds = getSplitPersonIds(menuItem);
+            const itemShare = getMenuItemShare(menuItem);
+            const isAllSelected = splitPersonIds.length === persons.length;
+
+            return (
+              <motion.div
+                key={menuItem.id}
+                variants={cardVariants}
+                initial="initial"
+                animate="animate"
+                className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-gray-800 dark:text-gray-100 truncate">
+                      {menuItem.name}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {formatCurrency(menuItem.totalPrice, currency)} ·{" "}
+                      {t("assignItems.equalSplitCount", {
+                        count: splitPersonIds.length,
+                      })}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-xs text-gray-400 dark:text-gray-500">
+                      {t("assignItems.equalPerPerson")}
+                    </p>
+                    <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
+                      {formatCurrency(itemShare, currency)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateMenuItemSplitPeople(menuItem.id, undefined)
+                    }
+                    className={`px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors ${
+                      isAllSelected
+                        ? "border-indigo-500 bg-indigo-500 text-white"
+                        : "border-gray-200 text-gray-500 hover:border-indigo-300 dark:border-gray-700 dark:text-gray-400"
+                    }`}
+                  >
+                    {t("assignItems.equalAllPeople")}
+                  </button>
+                  {persons.map((person) => {
+                    const isSelected = splitPersonIds.includes(person.id);
+                    return (
+                      <button
+                        key={person.id}
+                        type="button"
+                        onClick={() =>
+                          handleToggleItemPerson(menuItem, person.id)
+                        }
+                        className={`px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors ${
+                          isSelected
+                            ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+                            : "border-gray-200 bg-gray-50 text-gray-400 dark:border-gray-700 dark:bg-gray-800/70 dark:text-gray-500"
+                        }`}
+                      >
+                        {person.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+        </TutorialTip>
+      )}
 
       {/* Persons List */}
-      <div className="space-y-3 mb-6">
+      <TutorialTip
+        text={
+          isEqualSplit
+            ? t("assignItems.tutorialPersonList")
+            : t("assignItems.tutorialClaim")
+        }
+        className="mb-6"
+      >
+      <div className="space-y-3">
         <AnimatePresence mode="popLayout">
           {persons.length === 0 ? (
             <EmptyState
@@ -231,23 +395,29 @@ export default function AssignItems() {
                         className="font-semibold text-gray-800 dark:text-gray-100 text-sm bg-transparent dark:bg-transparent focus:outline-none w-full truncate"
                       />
                       <p className="text-xs text-indigo-600 font-medium">
-                        {t("assignItems.itemCountLabel", {
-                          count: person.claimedItems.length,
-                          subtotal: formatCurrency(subtotal, currency),
-                        })}
+                        {isEqualSplit
+                          ? t("assignItems.equalPersonShare", {
+                              amount: formatCurrency(subtotal, currency),
+                            })
+                          : t("assignItems.itemCountLabel", {
+                              count: person.claimedItems.length,
+                              subtotal: formatCurrency(subtotal, currency),
+                            })}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <button
-                        onClick={() =>
-                          setExpandedPerson(isExpanded ? null : person.id)
-                        }
-                        className="px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 text-xs font-semibold hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors"
-                      >
-                        {isExpanded
-                          ? t("assignItems.closeBtn")
-                          : t("assignItems.claimBtn")}
-                      </button>
+                      {!isEqualSplit && (
+                        <button
+                          onClick={() =>
+                            setExpandedPerson(isExpanded ? null : person.id)
+                          }
+                          className="px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 text-xs font-semibold hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors"
+                        >
+                          {isExpanded
+                            ? t("assignItems.closeBtn")
+                            : t("assignItems.claimBtn")}
+                        </button>
+                      )}
                       <button
                         onClick={() => setDeleteConfirm(person.id)}
                         className="w-7 h-7 rounded-lg bg-red-50 dark:bg-red-950/50 text-red-400 flex items-center justify-center hover:bg-red-100 dark:hover:bg-red-950 text-xs"
@@ -258,7 +428,9 @@ export default function AssignItems() {
                   </div>
 
                   {/* Claimed Items Summary */}
-                  {person.claimedItems.length > 0 && !isExpanded && (
+                  {!isEqualSplit &&
+                    person.claimedItems.length > 0 &&
+                    !isExpanded && (
                     <div className="px-4 pb-3 flex flex-wrap gap-1.5">
                       {person.claimedItems.map((ci) => (
                         <span
@@ -273,7 +445,7 @@ export default function AssignItems() {
 
                   {/* Expanded Claim Panel */}
                   <AnimatePresence>
-                    {isExpanded && (
+                    {!isEqualSplit && isExpanded && (
                       <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
@@ -452,6 +624,7 @@ export default function AssignItems() {
           )}
         </AnimatePresence>
       </div>
+      </TutorialTip>
 
       {/* Footer */}
       <div className="sticky bottom-4">

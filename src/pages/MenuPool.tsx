@@ -7,6 +7,7 @@ import { useToast } from "../components/Toast";
 import PageLayout from "../components/PageLayout";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
+import TutorialTip from "../components/TutorialTip";
 import { formatCurrency } from "../lib/formatters";
 import type { MenuItem } from "../types";
 
@@ -145,7 +146,11 @@ export default function MenuPool() {
       subtitle={t("menuPool.pageSubtitle")}
     >
       {/* Add/Edit Form */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden mb-4">
+      <TutorialTip
+        text={t("menuPool.tutorialAddItem")}
+        className="mb-4"
+      >
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
         <button
           onClick={() => {
             if (editingId) {
@@ -207,7 +212,7 @@ export default function MenuPool() {
                   />
                 </div>
 
-                <div>
+                <TutorialTip text={t("menuPool.tutorialPriceMode")}>
                   <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-2 block">
                     {t("menuPool.priceModeLabel")}
                   </label>
@@ -229,7 +234,7 @@ export default function MenuPool() {
                       </button>
                     ))}
                   </div>
-                </div>
+                </TutorialTip>
 
                 {form.priceMode === "unit" ? (
                   <div>
@@ -300,9 +305,11 @@ export default function MenuPool() {
           )}
         </AnimatePresence>
       </div>
+      </TutorialTip>
 
       {/* Item List */}
-      <div className="space-y-3 mb-6">
+      <TutorialTip text={t("menuPool.tutorialItemList")} className="mb-6">
+      <div className="space-y-3">
         <AnimatePresence mode="popLayout">
           {menuPool.length === 0 ? (
             <EmptyState
@@ -381,6 +388,7 @@ export default function MenuPool() {
           )}
         </AnimatePresence>
       </div>
+      </TutorialTip>
 
       {/* Footer */}
       <div className="sticky bottom-4">

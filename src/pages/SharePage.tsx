@@ -16,14 +16,12 @@ export default function SharePage() {
   const contentRef = useRef<HTMLDivElement>(null);
 
   const [data, setData] = useState<SplitBillState | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  const [loading, setLoading] = useState(Boolean(id));
+  const [notFound, setNotFound] = useState(!id);
   const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     if (!id) {
-      setNotFound(true);
-      setLoading(false);
       return;
     }
     fetchSession(id)
@@ -52,7 +50,12 @@ export default function SharePage() {
   const handleCopyText = () => {
     if (!data) return;
     const currency = data.session?.currency ?? "IDR";
-    const summaries = calculatePersonSummaries(data.persons, data.charges);
+    const summaries = calculatePersonSummaries(
+      data.persons,
+      data.charges,
+      data.menuPool,
+      data.session?.splitMode,
+    );
     const grandTotal = summaries.reduce((s, ps) => s + ps.total, 0);
     const lines: string[] = [];
     lines.push(`🧾 ${data.session?.name ?? ""}`);
@@ -153,7 +156,12 @@ export default function SharePage() {
 
   const { session, persons, charges, paymentMethods } = data;
   const currency = session?.currency ?? "IDR";
-  const summaries = calculatePersonSummaries(persons, charges);
+  const summaries = calculatePersonSummaries(
+    persons,
+    charges,
+    data.menuPool,
+    session?.splitMode,
+  );
   const grandTotal = summaries.reduce((s, ps) => s + ps.total, 0);
 
   return (
