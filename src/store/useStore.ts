@@ -8,6 +8,7 @@ import type {
   ClaimedItem,
   Charge,
   PaymentMethod,
+  PaymentContribution,
   Currency,
   SplitMode,
 } from "../types";
@@ -20,6 +21,7 @@ interface StoreState {
   persons: Person[];
   charges: Charge[];
   paymentMethods: PaymentMethod[];
+  paymentContributions: PaymentContribution[];
 
   // Session
   createSession: (
@@ -60,6 +62,16 @@ interface StoreState {
   ) => void;
   removePaymentMethod: (id: string) => void;
 
+  // Payment Contributions
+  addPaymentContribution: (
+    contribution: Omit<PaymentContribution, "id">,
+  ) => void;
+  updatePaymentContribution: (
+    id: string,
+    updates: Partial<Omit<PaymentContribution, "id">>,
+  ) => void;
+  removePaymentContribution: (id: string) => void;
+
   // Reset
   resetStore: () => void;
   loadState: (state: {
@@ -68,6 +80,7 @@ interface StoreState {
     persons: Person[];
     charges: Charge[];
     paymentMethods: PaymentMethod[];
+    paymentContributions?: PaymentContribution[];
   }) => void;
 }
 
@@ -88,6 +101,7 @@ export const useStore = create<StoreState>()(
       persons: [],
       charges: [],
       paymentMethods: [],
+      paymentContributions: [],
 
       createSession: (name, currency, splitMode = "itemized") => {
         const slug = generateSlug(name);
@@ -99,6 +113,7 @@ export const useStore = create<StoreState>()(
           persons: [],
           charges: [],
           paymentMethods: [],
+          paymentContributions: [],
         });
         return session;
       },
@@ -170,7 +185,13 @@ export const useStore = create<StoreState>()(
               (personId) => personId !== id,
             ),
           }));
-          return { persons: newPersons, menuPool: updatedPool };
+          return {
+            persons: newPersons,
+            menuPool: updatedPool,
+            paymentContributions: state.paymentContributions.filter(
+              (contribution) => contribution.personId !== id,
+            ),
+          };
         });
       },
 
@@ -288,6 +309,34 @@ export const useStore = create<StoreState>()(
         }));
       },
 
+      addPaymentContribution: (contribution) => {
+        set((state) => ({
+          paymentContributions: [
+            ...state.paymentContributions,
+            { ...contribution, id: uuidv4() },
+          ],
+        }));
+      },
+
+      updatePaymentContribution: (id, updates) => {
+        set((state) => ({
+          paymentContributions: state.paymentContributions.map(
+            (contribution) =>
+              contribution.id === id
+                ? { ...contribution, ...updates }
+                : contribution,
+          ),
+        }));
+      },
+
+      removePaymentContribution: (id) => {
+        set((state) => ({
+          paymentContributions: state.paymentContributions.filter(
+            (contribution) => contribution.id !== id,
+          ),
+        }));
+      },
+
       resetStore: () =>
         set({
           currentStep: 1,
@@ -296,6 +345,7 @@ export const useStore = create<StoreState>()(
           persons: [],
           charges: [],
           paymentMethods: [],
+          paymentContributions: [],
         }),
 
       loadState: (state) =>
@@ -305,6 +355,7 @@ export const useStore = create<StoreState>()(
           persons: state.persons,
           charges: state.charges,
           paymentMethods: state.paymentMethods,
+          paymentContributions: state.paymentContributions ?? [],
         }),
     }),
     {
@@ -316,6 +367,7 @@ export const useStore = create<StoreState>()(
         persons: state.persons,
         charges: state.charges,
         paymentMethods: state.paymentMethods,
+        paymentContributions: state.paymentContributions,
       }),
     },
   ),

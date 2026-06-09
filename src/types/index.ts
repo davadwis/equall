@@ -89,10 +89,20 @@ export interface PaymentMethod {
   additionalInfo: string;
 }
 
+export interface PaymentContribution {
+  id: string;
+  personId: string;
+  amount: number;
+  note: string;
+}
+
 export interface PersonSummary {
   person: Person;
   itemSubtotal: number;
   chargeBreakdown: { chargeId: string; chargeName: string; amount: number }[];
+  originalTotal?: number;
+  contributionAmount?: number;
+  coveredAmount?: number;
   total: number;
 }
 
@@ -102,4 +112,5 @@ export interface SplitBillState {
   persons: Person[];
   charges: Charge[];
   paymentMethods: PaymentMethod[];
+  paymentContributions?: PaymentContribution[];
 }

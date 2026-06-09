@@ -55,8 +55,14 @@ export default function SharePage() {
       data.charges,
       data.menuPool,
       data.session?.splitMode,
+      data.paymentContributions ?? [],
     );
     const grandTotal = summaries.reduce((s, ps) => s + ps.total, 0);
+    const hasContributions = (data.paymentContributions ?? []).length > 0;
+    const contributionTotal = summaries.reduce(
+      (sum, ps) => sum + (ps.contributionAmount ?? 0),
+      0,
+    );
     const lines: string[] = [];
     lines.push(`🧾 ${data.session?.name ?? ""}`);
     lines.push("");
@@ -74,10 +80,29 @@ export default function SharePage() {
           );
         });
       }
-      lines.push(`  ━ Total: ${formatCurrency(ps.total, currency)}`);
+      if (ps.originalTotal !== undefined && ps.originalTotal !== ps.total) {
+        lines.push(
+          `  Total awal: ${formatCurrency(ps.originalTotal, currency)}`,
+        );
+      }
+      if ((ps.contributionAmount ?? 0) > 0) {
+        lines.push(
+          `  Kontribusi: ${formatCurrency(ps.contributionAmount ?? 0, currency)}`,
+        );
+      } else if ((ps.coveredAmount ?? 0) > 0) {
+        lines.push(
+          `  Dibantu: -${formatCurrency(ps.coveredAmount ?? 0, currency)}`,
+        );
+      }
+      lines.push(`  ━ Bayar akhir: ${formatCurrency(ps.total, currency)}`);
       lines.push("");
     });
     lines.push(`💰 Grand Total: ${formatCurrency(grandTotal, currency)}`);
+    if (hasContributions) {
+      lines.push(
+        `🤝 Total kontribusi: ${formatCurrency(contributionTotal, currency)}`,
+      );
+    }
     if (data.paymentMethods.length > 0) {
       lines.push("");
       lines.push("💳 Pembayaran:");
@@ -154,15 +179,27 @@ export default function SharePage() {
     );
   }
 
-  const { session, persons, charges, paymentMethods } = data;
+  const {
+    session,
+    persons,
+    charges,
+    paymentMethods,
+    paymentContributions = [],
+  } = data;
   const currency = session?.currency ?? "IDR";
   const summaries = calculatePersonSummaries(
     persons,
     charges,
     data.menuPool,
     session?.splitMode,
+    paymentContributions,
   );
   const grandTotal = summaries.reduce((s, ps) => s + ps.total, 0);
+  const hasContributions = paymentContributions.length > 0;
+  const contributionTotal = summaries.reduce(
+    (sum, ps) => sum + (ps.contributionAmount ?? 0),
+    0,
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
@@ -202,9 +239,18 @@ export default function SharePage() {
               <span className="text-sm text-gray-500 dark:text-gray-400">
                 {t("share.grandTotal")}
               </span>
-              <span className="text-lg font-black text-indigo-600">
-                {formatCurrency(grandTotal, currency)}
-              </span>
+              <div className="text-right">
+                <span className="text-lg font-black text-indigo-600 block">
+                  {formatCurrency(grandTotal, currency)}
+                </span>
+                {hasContributions && (
+                  <span className="text-xs text-emerald-600 font-semibold">
+                    {t("share.contributionTotal", {
+                      amount: formatCurrency(contributionTotal, currency),
+                    })}
+                  </span>
+                )}
+              </div>
             </div>
           </motion.div>
 
@@ -226,9 +272,19 @@ export default function SharePage() {
                     {ps.person.name}
                   </span>
                 </div>
-                <span className="text-lg font-black text-indigo-600">
-                  {formatCurrency(ps.total, currency)}
-                </span>
+                <div className="text-right">
+                  <span className="text-lg font-black text-indigo-600 block">
+                    {formatCurrency(ps.total, currency)}
+                  </span>
+                  {ps.originalTotal !== undefined &&
+                    ps.originalTotal !== ps.total && (
+                      <span className="text-xs text-gray-400 dark:text-gray-500">
+                        {t("share.originalTotal", {
+                          amount: formatCurrency(ps.originalTotal, currency),
+                        })}
+                      </span>
+                    )}
+                </div>
               </div>
 
               <div className="px-4 py-3 space-y-1">
@@ -253,6 +309,22 @@ export default function SharePage() {
                       <span>+{formatCurrency(cb.amount, currency)}</span>
                     </div>
                   ))}
+                {hasContributions &&
+                  ((ps.contributionAmount ?? 0) > 0 ||
+                    (ps.coveredAmount ?? 0) > 0) && (
+                    <div className="flex justify-between text-xs text-emerald-600 font-semibold pt-1 border-t border-gray-100 dark:border-gray-800">
+                      <span>
+                        {(ps.contributionAmount ?? 0) > 0
+                          ? t("share.contributionPaid")
+                          : t("share.contributionCovered")}
+                      </span>
+                      <span>
+                        {(ps.contributionAmount ?? 0) > 0
+                          ? formatCurrency(ps.contributionAmount ?? 0, currency)
+                          : `-${formatCurrency(ps.coveredAmount ?? 0, currency)}`}
+                      </span>
+                    </div>
+                  )}
               </div>
             </motion.div>
           ))}

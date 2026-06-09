@@ -8,7 +8,9 @@ import PageLayout from "../components/PageLayout";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
 import TutorialTip from "../components/TutorialTip";
-import type { PaymentMethod, PaymentType } from "../types";
+import { formatCurrency } from "../lib/formatters";
+import { calculatePersonSummaries } from "../lib/calculations";
+import type { PaymentContribution, PaymentMethod, PaymentType } from "../types";
 
 const PAYMENT_TYPE_BASES: { value: PaymentType; icon: string }[] = [
   { value: "bank_transfer", icon: "🏦" },
@@ -24,6 +26,12 @@ const defaultForm = {
   accountNumber: "",
   accountName: "",
   additionalInfo: "",
+};
+
+const defaultContributionForm = {
+  personId: "",
+  amount: "",
+  note: "",
 };
 
 const cardVariants = {
@@ -68,17 +76,58 @@ export default function PaymentMethods() {
   }));
 
   const paymentMethods = useStore((s) => s.paymentMethods);
+  const session = useStore((s) => s.session);
+  const persons = useStore((s) => s.persons);
+  const menuPool = useStore((s) => s.menuPool);
+  const charges = useStore((s) => s.charges);
+  const paymentContributions = useStore((s) => s.paymentContributions);
   const addPaymentMethod = useStore((s) => s.addPaymentMethod);
   const updatePaymentMethod = useStore((s) => s.updatePaymentMethod);
   const removePaymentMethod = useStore((s) => s.removePaymentMethod);
+  const addPaymentContribution = useStore((s) => s.addPaymentContribution);
+  const updatePaymentContribution = useStore(
+    (s) => s.updatePaymentContribution,
+  );
+  const removePaymentContribution = useStore(
+    (s) => s.removePaymentContribution,
+  );
   const setCurrentStep = useStore((s) => s.setCurrentStep);
 
   const [form, setForm] = useState(defaultForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [contributionForm, setContributionForm] = useState(
+    defaultContributionForm,
+  );
+  const [editingContributionId, setEditingContributionId] = useState<
+    string | null
+  >(null);
+  const [showContributionForm, setShowContributionForm] = useState(false);
+  const [deleteContributionConfirm, setDeleteContributionConfirm] = useState<
+    string | null
+  >(null);
 
   const selectedType = PAYMENT_TYPES.find((t) => t.value === form.type)!;
+  const currency = session?.currency ?? "IDR";
+  const baseSummaries = calculatePersonSummaries(
+    persons,
+    charges,
+    menuPool,
+    session?.splitMode,
+  );
+  const grandTotal = baseSummaries.reduce((sum, ps) => sum + ps.total, 0);
+  const contributionTotal = Math.min(
+    grandTotal,
+    paymentContributions.reduce(
+      (sum, contribution) => sum + contribution.amount,
+      0,
+    ),
+  );
+  const remainingTotal = Math.max(0, grandTotal - contributionTotal);
+  const personNameById = new Map(
+    persons.map((person) => [person.id, person.name]),
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,6 +168,59 @@ export default function PaymentMethods() {
     setShowForm(true);
   };
 
+  const handleContributionSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const selectedPersonId = contributionForm.personId || persons[0]?.id || "";
+    const amount = parseFloat(contributionForm.amount);
+    if (!selectedPersonId) {
+      showToast(t("payment.contributionValidationPerson"), "error");
+      return;
+    }
+    if (!amount || amount <= 0) {
+      showToast(t("payment.contributionValidationAmount"), "error");
+      return;
+    }
+
+    const otherContributionTotal = paymentContributions.reduce(
+      (sum, contribution) =>
+        contribution.id === editingContributionId
+          ? sum
+          : sum + contribution.amount,
+      0,
+    );
+    if (otherContributionTotal + amount > grandTotal) {
+      showToast(t("payment.contributionValidationLimit"), "error");
+      return;
+    }
+
+    const payload: Omit<PaymentContribution, "id"> = {
+      personId: selectedPersonId,
+      amount,
+      note: contributionForm.note.trim(),
+    };
+
+    if (editingContributionId) {
+      updatePaymentContribution(editingContributionId, payload);
+      showToast(t("payment.contributionToastUpdated"), "success");
+      setEditingContributionId(null);
+    } else {
+      addPaymentContribution(payload);
+      showToast(t("payment.contributionToastAdded"), "success");
+    }
+    setContributionForm(defaultContributionForm);
+    setShowContributionForm(false);
+  };
+
+  const handleContributionEdit = (contribution: PaymentContribution) => {
+    setContributionForm({
+      personId: contribution.personId,
+      amount: String(contribution.amount),
+      note: contribution.note,
+    });
+    setEditingContributionId(contribution.id);
+    setShowContributionForm(true);
+  };
+
   const handleNext = () => {
     setCurrentStep(6);
     navigate("/summary");
@@ -143,6 +245,194 @@ export default function PaymentMethods() {
       title={t("payment.pageTitle")}
       subtitle={t("payment.pageSubtitle")}
     >
+      <TutorialTip text={t("payment.tutorialContribution")} className="mb-4">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+        <div className="p-4 border-b border-gray-100 dark:border-gray-800">
+          <div className="flex justify-between gap-3">
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {t("payment.contributionGrandTotal")}
+              </p>
+              <p className="text-base font-bold text-gray-800 dark:text-gray-100">
+                {formatCurrency(grandTotal, currency)}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {t("payment.contributionCoveredTotal")}
+              </p>
+              <p className="text-base font-bold text-emerald-600">
+                {formatCurrency(contributionTotal, currency)}
+              </p>
+            </div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
+            <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+              {t("payment.contributionRemaining")}
+            </span>
+            <span className="text-sm font-bold text-indigo-600">
+              {formatCurrency(remainingTotal, currency)}
+            </span>
+          </div>
+        </div>
+
+        <button
+          onClick={() => {
+            if (editingContributionId) {
+              setEditingContributionId(null);
+              setContributionForm(defaultContributionForm);
+            }
+            setShowContributionForm((v) => !v);
+          }}
+          className="w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+        >
+          <span className="font-semibold text-gray-800 dark:text-gray-100">
+            {editingContributionId
+              ? t("payment.editContribution")
+              : t("payment.addContribution")}
+          </span>
+          <motion.span
+            animate={{ rotate: showContributionForm ? 180 : 0 }}
+            transition={{ duration: 0.2 }}
+            className="text-gray-400 dark:text-gray-500"
+          >
+            â–¼
+          </motion.span>
+        </button>
+
+        <AnimatePresence>
+          {showContributionForm && (
+            <motion.form
+              initial={{ height: 0, opacity: 1 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              onSubmit={handleContributionSubmit}
+              className="overflow-hidden"
+            >
+              <div className="px-4 pb-4 pt-3 border-t border-gray-100 dark:border-gray-800 space-y-3">
+                <div>
+                  <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1 block">
+                    {t("payment.contributionPersonLabel")}
+                  </label>
+                  <select
+                    value={contributionForm.personId || persons[0]?.id || ""}
+                    onChange={(e) =>
+                      setContributionForm((prev) => ({
+                        ...prev,
+                        personId: e.target.value,
+                      }))
+                    }
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  >
+                    {persons.map((person) => (
+                      <option key={person.id} value={person.id}>
+                        {person.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1 block">
+                    {t("payment.contributionAmountLabel")}
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    step="any"
+                    value={contributionForm.amount}
+                    onChange={(e) =>
+                      setContributionForm((prev) => ({
+                        ...prev,
+                        amount: e.target.value,
+                      }))
+                    }
+                    placeholder="0"
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1 block">
+                    {t("payment.contributionNoteLabel")}
+                  </label>
+                  <input
+                    type="text"
+                    value={contributionForm.note}
+                    onChange={(e) =>
+                      setContributionForm((prev) => ({
+                        ...prev,
+                        note: e.target.value,
+                      }))
+                    }
+                    placeholder={t("payment.contributionNotePlaceholder")}
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full py-2.5 rounded-xl bg-indigo-500 text-white font-semibold text-sm hover:bg-indigo-600 transition-colors"
+                >
+                  {editingContributionId
+                    ? t("common.save")
+                    : t("payment.addContributionBtn")}
+                </button>
+              </div>
+            </motion.form>
+          )}
+        </AnimatePresence>
+      </div>
+      </TutorialTip>
+
+      <div className="space-y-3 mb-6">
+        <AnimatePresence mode="popLayout">
+          {paymentContributions.length > 0 &&
+            paymentContributions.map((contribution, idx) => (
+              <motion.div
+                key={contribution.id}
+                variants={cardVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                layout
+                transition={{ delay: idx * 0.05 }}
+                className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-4"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center text-emerald-600 font-bold shrink-0">
+                    %
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-800 dark:text-gray-100 text-sm">
+                      {personNameById.get(contribution.personId) ??
+                        t("payment.unknownPerson")}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                      {formatCurrency(contribution.amount, currency)}
+                      {contribution.note ? ` · ${contribution.note}` : ""}
+                    </p>
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    <button
+                      onClick={() => handleContributionEdit(contribution)}
+                      className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center hover:bg-amber-100 text-sm"
+                    >
+                      âœï¸
+                    </button>
+                    <button
+                      onClick={() =>
+                        setDeleteContributionConfirm(contribution.id)
+                      }
+                      className="w-8 h-8 rounded-lg bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-100 text-sm"
+                    >
+                      ðŸ—‘ï¸
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+        </AnimatePresence>
+      </div>
+
       {/* Form */}
       <TutorialTip text={t("payment.tutorialPayment")} className="mb-4">
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
@@ -329,6 +619,19 @@ export default function PaymentMethods() {
           }
         }}
         onCancel={() => setDeleteConfirm(null)}
+      />
+      <ConfirmDialog
+        isOpen={!!deleteContributionConfirm}
+        title={t("payment.deleteContributionTitle")}
+        message={t("payment.deleteContributionMsg")}
+        onConfirm={() => {
+          if (deleteContributionConfirm) {
+            removePaymentContribution(deleteContributionConfirm);
+            setDeleteContributionConfirm(null);
+            showToast(t("payment.contributionToastDeleted"), "success");
+          }
+        }}
+        onCancel={() => setDeleteContributionConfirm(null)}
       />
     </PageLayout>
   );

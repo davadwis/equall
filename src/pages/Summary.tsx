@@ -23,6 +23,7 @@ export default function Summary() {
   const persons = useStore((s) => s.persons);
   const charges = useStore((s) => s.charges);
   const paymentMethods = useStore((s) => s.paymentMethods);
+  const paymentContributions = useStore((s) => s.paymentContributions);
 
   const [isSaving, setIsSaving] = useState(false);
   const [shareLink, setShareLink] = useState<string | null>(null);
@@ -34,8 +35,14 @@ export default function Summary() {
     charges,
     menuPool,
     session?.splitMode,
+    paymentContributions,
   );
   const grandTotal = summaries.reduce((s, ps) => s + ps.total, 0);
+  const hasContributions = paymentContributions.length > 0;
+  const contributionTotal = summaries.reduce(
+    (sum, ps) => sum + (ps.contributionAmount ?? 0),
+    0,
+  );
 
   const handleSave = async () => {
     if (!session) return;
@@ -47,6 +54,7 @@ export default function Summary() {
         persons,
         charges,
         paymentMethods,
+        paymentContributions,
       };
       await saveSession(session.slug, state);
       const link = `${window.location.origin}/split/${session.slug}`;
@@ -87,10 +95,29 @@ export default function Summary() {
           );
         });
       }
-      lines.push(`  ━ Total: ${formatCurrency(ps.total, currency)}`);
+      if (ps.originalTotal !== undefined && ps.originalTotal !== ps.total) {
+        lines.push(
+          `  Total awal: ${formatCurrency(ps.originalTotal, currency)}`,
+        );
+      }
+      if ((ps.contributionAmount ?? 0) > 0) {
+        lines.push(
+          `  Kontribusi: ${formatCurrency(ps.contributionAmount ?? 0, currency)}`,
+        );
+      } else if ((ps.coveredAmount ?? 0) > 0) {
+        lines.push(
+          `  Dibantu: -${formatCurrency(ps.coveredAmount ?? 0, currency)}`,
+        );
+      }
+      lines.push(`  ━ Bayar akhir: ${formatCurrency(ps.total, currency)}`);
       lines.push("");
     });
     lines.push(`💰 Grand Total: ${formatCurrency(grandTotal, currency)}`);
+    if (hasContributions) {
+      lines.push(
+        `🤝 Total kontribusi: ${formatCurrency(contributionTotal, currency)}`,
+      );
+    }
     if (paymentMethods.length > 0) {
       lines.push("");
       lines.push("💳 Pembayaran:");
@@ -169,6 +196,13 @@ export default function Summary() {
               <p className="text-xl font-black">
                 {formatCurrency(grandTotal, currency)}
               </p>
+              {hasContributions && (
+                <p className="text-indigo-200 text-xs">
+                  {t("summary.contributionTotal", {
+                    amount: formatCurrency(contributionTotal, currency),
+                  })}
+                </p>
+              )}
               <p className="text-indigo-200 text-xs">
                 {t("summary.peopleCount", { count: persons.length })}
               </p>
@@ -206,6 +240,14 @@ export default function Summary() {
                 <p className="text-lg font-black text-indigo-600">
                   {formatCurrency(ps.total, currency)}
                 </p>
+                {ps.originalTotal !== undefined &&
+                  ps.originalTotal !== ps.total && (
+                    <p className="text-xs text-gray-400 dark:text-gray-500">
+                      {t("summary.originalTotal", {
+                        amount: formatCurrency(ps.originalTotal, currency),
+                      })}
+                    </p>
+                  )}
               </div>
             </div>
 
@@ -264,6 +306,35 @@ export default function Summary() {
                 ))}
               </div>
             )}
+
+            {hasContributions &&
+              ((ps.contributionAmount ?? 0) > 0 ||
+                (ps.coveredAmount ?? 0) > 0) && (
+                <div className="px-4 pb-3 space-y-1.5 border-t border-gray-50 dark:border-gray-800">
+                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide pt-2">
+                    {t("summary.contributionsLabel")}
+                  </p>
+                  {(ps.contributionAmount ?? 0) > 0 ? (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500 dark:text-gray-400">
+                        {t("summary.contributionPaid")}
+                      </span>
+                      <span className="text-emerald-600 font-semibold">
+                        {formatCurrency(ps.contributionAmount ?? 0, currency)}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500 dark:text-gray-400">
+                        {t("summary.contributionCovered")}
+                      </span>
+                      <span className="text-emerald-600 font-semibold">
+                        -{formatCurrency(ps.coveredAmount ?? 0, currency)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
 
             {/* Total */}
             <div className="px-4 py-3 bg-indigo-50 dark:bg-indigo-950/40 flex justify-between items-center border-t border-indigo-100 dark:border-indigo-900">
